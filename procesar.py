@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-site = 'PI'
+site = 'AR'
 year = '2023'
-for month in  ['03']:
+for month in  ['01','02','03','04','05','06','07','08','09','10','11','12']:
 
     df = pd.read_csv(f'modelados/raw/{site}_PP_HR2_T2_dirViento10_magViento10_PSFC_ACLWDNB_ACLWUPB_ACSWDNB_TSLB_SMOIS_Freezing_level_Tmax_Tmin_{year}_{month}.csv')
 
