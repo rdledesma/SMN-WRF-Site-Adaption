@@ -9,6 +9,26 @@ import joblib
 import Metrics as ms   # tus métricas personalizadas
 import glob
 from sklearn.model_selection import train_test_split
+import warnings
+from sklearn.exceptions import ConvergenceWarning
+warnings.filterwarnings("ignore", category=ConvergenceWarning)
+
+from sklearn.metrics import mean_squared_error
+
+def entrenar_y_registrar_loss(mlp, X_train, y_train, X_val, y_val):
+    train_losses = []
+    val_losses = []
+    mlp.warm_start = True
+    mlp.max_iter = 1  # entrenar una iteración por ciclo
+
+    for i in range(500):  # por ejemplo, 200 iteraciones
+        mlp.fit(X_train, y_train)
+        y_pred_train = mlp.predict(X_train)
+        y_pred_val = mlp.predict(X_val)
+        train_losses.append(mean_squared_error(y_train, y_pred_train))
+        val_losses.append(mean_squared_error(y_val, y_pred_val))
+
+    return train_losses, val_losses, mlp
 
 
 # === 1. Cargar datos ===
@@ -81,7 +101,7 @@ X_test_s  = scaler.transform(X_test)
 param_grid = {
     'hidden_layer_sizes': [(10,), (20,), (30,), (50,20), (100,50)],
     'activation': ['relu'],
-    'learning_rate_init': [ 0.01, 0.001],
+    'learning_rate_init': [ 0.001],
     'max_iter': [500]
 }
 
@@ -93,8 +113,11 @@ mejor_rmbe = np.inf
 
 for params in ParameterGrid(param_grid):
     print(f"Entrenando con: {params}")
-    mlp = MLPRegressor(random_state=42, **params)
-    mlp.fit(X_train_s, y_train)
+    mlp = MLPRegressor(random_state=42, **params, early_stopping=True, n_iter_no_change=30)
+
+
+    train_losses, val_losses, mlp = entrenar_y_registrar_loss(mlp, X_train_s, y_train, X_val_s, y_val)
+    #mlp.fit(X_train_s, y_train)
     
     # Predicción en validación
     y_pred_val = mlp.predict(X_val_s)
@@ -104,6 +127,19 @@ for params in ParameterGrid(param_grid):
     rmbe = ms.rmbe(y_val, y_pred_val)
     
     print(f" → rrmsd={rmse:.3f}, rmbe={rmbe:.3f}")
+
+    
+
+    plt.figure(figsize=(7,5))
+    plt.plot(train_losses, label='Training loss')
+    plt.plot(val_losses, label='Validation loss')
+    plt.xlabel('Iteración')
+    plt.ylabel('Loss (MSE)')
+    plt.title('Evolución de la función de pérdida (Train vs Val)')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show(block=False)
+
     
     # Seleccionar mejor modelo según rrmsd
     if (rmse < mejor_rmse) and (abs(rmbe) < abs(mejor_rmbe)):
