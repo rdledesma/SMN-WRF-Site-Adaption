@@ -189,3 +189,17 @@ plt.title('Comparación en conjunto Test  Buenos Aires (72h pronóstico)')
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.show()
+
+
+
+
+
+# === 4. Definimos grilla de hiperparámetros ===
+param_grid = {
+    'hidden_layer_sizes': [(5,10)],
+    'activation': ['relu'],
+    'learning_rate_init': [ 0.001],
+    'max_iter': [500],
+    'solver': ['adam'], 
+    'early_stopping': [True],
+}
