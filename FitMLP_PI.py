@@ -55,14 +55,14 @@ y = df[target].copy().values.reshape(-1,1)  # mantener como columna para scaler_
 
 
 # === Splits (igual que tu original, pero con comprobaciones) ===
-X_train_val, X_test, y_train_val, y_test = train_test_split(
+X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.5, random_state=42, shuffle=True
 )
 
-
 X_train, X_val, y_train, y_val = train_test_split(
-    X, y, test_size=0.2, random_state=42, shuffle=True
+    X_train, y_train, test_size=0.2, random_state=42, shuffle=True
 )
+
 
 
 print(f"Train: {len(X_train)/len(df):.1%}  ({len(X_train)} muestras)")
@@ -83,13 +83,12 @@ y_test_s = scaler_y.transform(y_test).ravel()
 
 # === Grid de hiperparámetros ===
 param_grid = {
-    'hidden_layer_sizes': [(50,20,10), (50,20)],
+    'hidden_layer_sizes': [(5,10), (10,20),(20,40)],
     'activation': ['relu'],
-    'learning_rate_init': [ 0.001, 0.0005],
+    'learning_rate_init': [ 0.001, 0.01],
     'solver': ['adam'],  # adam funciona bien; podrías probar 'sgd' si haces mini-batches
     'alpha': [1e-4, 1e-3]  # regularización L2
 }
-
 # Para registrar resultados
 resultados = []
 
@@ -167,15 +166,15 @@ for params in ParameterGrid(param_grid):
         mejor_val_losses = val_losses
 
     # Graficar la curva de pérdidas para esta configuración (opcional)
-    plt.figure(figsize=(7,4))
-    plt.plot(train_losses, label='train MSE (scaled)')
-    plt.plot(val_losses, label='val MSE (scaled)')
-    plt.xlabel('Epoch')
-    plt.ylabel('MSE (scaled)')
-    plt.title(f"Loss curve params: {params}")
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.show(block=False)
+    # plt.figure(figsize=(7,4))
+    # plt.plot(train_losses, label='train MSE (scaled)')
+    # plt.plot(val_losses, label='val MSE (scaled)')
+    # plt.xlabel('Epoch')
+    # plt.ylabel('MSE (scaled)')
+    # plt.title(f"Loss curve params: {params}")
+    # plt.legend()
+    # plt.grid(True, alpha=0.3)
+    # plt.show(block=False)
 
 # === Resultados ===
 print("\n=== Mejor modelo según rrmsd en validación ===")

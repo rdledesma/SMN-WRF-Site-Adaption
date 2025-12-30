@@ -21,7 +21,7 @@ def entrenar_y_registrar_loss(mlp, X_train, y_train, X_val, y_val):
     mlp.warm_start = True
     mlp.max_iter = 1  # entrenar una iteración por ciclo
 
-    for i in range(500):  # por ejemplo, 200 iteraciones
+    for i in range(200):  # por ejemplo, 200 iteraciones
         mlp.fit(X_train, y_train)
         y_pred_train = mlp.predict(X_train)
         y_pred_val = mlp.predict(X_val)
@@ -72,16 +72,16 @@ target = 'ghi'
 X = df[features]
 y = df[target]
 
-# === 1️⃣ Primer split: separar test (50%) del resto (50%) ===
-X_train_val, X_test, y_train_val, y_test = train_test_split(
+# === Splits (igual que tu original, pero con comprobaciones) ===
+X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.5, random_state=42, shuffle=True
 )
 
-# === 2️⃣ Segundo split: dividir el 50% restante en 40% train y 10% val ===
-# Nota: 10% del total equivale a 1/5 = 20% del grupo train_val
 X_train, X_val, y_train, y_val = train_test_split(
-    X_train_val, y_train_val, test_size=0.2, random_state=42, shuffle=True
+    X_train, y_train, test_size=0.2, random_state=42, shuffle=True
 )
+
+
 
 # === Verificar proporciones ===
 print(f"Train: {len(X_train)/len(df):.1%}")
@@ -98,11 +98,13 @@ X_val_s   = scaler.transform(X_val)
 X_test_s  = scaler.transform(X_test)
 
 # === 4. Definimos grilla de hiperparámetros ===
+# === Grid de hiperparámetros ===
 param_grid = {
-    'hidden_layer_sizes': [(10,), (20,), (30,), (50,20), (100,50)],
+    'hidden_layer_sizes': [(5,10), (10,20),(20,40)],
     'activation': ['relu'],
-    'learning_rate_init': [ 0.001],
-    'max_iter': [500]
+    'learning_rate_init': [ 0.001, 0.01],
+    'solver': ['adam'],  # adam funciona bien; podrías probar 'sgd' si haces mini-batches
+    'alpha': [1e-4, 1e-3]  # regularización L2
 }
 
 # === 5. Entrenar y evaluar manualmente ===
@@ -130,15 +132,15 @@ for params in ParameterGrid(param_grid):
 
     
 
-    plt.figure(figsize=(7,5))
-    plt.plot(train_losses, label='Training loss')
-    plt.plot(val_losses, label='Validation loss')
-    plt.xlabel('Iteración')
-    plt.ylabel('Loss (MSE)')
-    plt.title('Evolución de la función de pérdida (Train vs Val)')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.show(block=False)
+    # plt.figure(figsize=(7,5))
+    # plt.plot(train_losses, label='Training loss')
+    # plt.plot(val_losses, label='Validation loss')
+    # plt.xlabel('Iteración')
+    # plt.ylabel('Loss (MSE)')
+    # plt.title('Evolución de la función de pérdida (Train vs Val)')
+    # plt.legend()
+    # plt.grid(True, alpha=0.3)
+    # plt.show(block=False)
 
     
     # Seleccionar mejor modelo según rrmsd
@@ -189,17 +191,3 @@ plt.title('Comparación en conjunto Test  Buenos Aires (72h pronóstico)')
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.show()
-
-
-
-
-
-# === 4. Definimos grilla de hiperparámetros ===
-param_grid = {
-    'hidden_layer_sizes': [(5,10)],
-    'activation': ['relu'],
-    'learning_rate_init': [ 0.001],
-    'max_iter': [500],
-    'solver': ['adam'], 
-    'early_stopping': [True],
-}

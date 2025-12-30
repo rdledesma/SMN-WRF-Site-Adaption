@@ -24,7 +24,7 @@ MODEL_PREFIX = f"MLP_{SITE}_best"
 SCALER_X_NAME = f"scaler_X_{SITE}.pkl"
 SCALER_y_NAME = f"scaler_y_{SITE}.pkl"
 MAX_EPOCHS = 200
-BATCH_SIZE = None  # None => usar todo el X_train (puedes implementar mini-batches si quieres)
+BATCH_SIZE = 50  # None => usar todo el X_train (puedes implementar mini-batches si quieres)
 # ---------------------------
 
 # === Cargar datos ===
@@ -55,13 +55,14 @@ y = df[target].copy().values.reshape(-1,1)  # mantener como columna para scaler_
 
 
 # === Splits (igual que tu original, pero con comprobaciones) ===
-X_train_val, X_test, y_train_val, y_test = train_test_split(
+X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.5, random_state=42, shuffle=True
 )
 
 
+
 X_train, X_val, y_train, y_val = train_test_split(
-    X, y, test_size=0.2, random_state=42, shuffle=True
+    X_train, y_train, test_size=0.2, random_state=42, shuffle=True
 )
 
 
@@ -83,9 +84,9 @@ y_test_s = scaler_y.transform(y_test).ravel()
 
 # === Grid de hiperparámetros ===
 param_grid = {
-    'hidden_layer_sizes': [(50,20,10), (50,20)],
+    'hidden_layer_sizes': [(5,10), (10,20),(20,40)],
     'activation': ['relu'],
-    'learning_rate_init': [ 0.001, 0.0005],
+    'learning_rate_init': [ 0.001, 0.01],
     'solver': ['adam'],  # adam funciona bien; podrías probar 'sgd' si haces mini-batches
     'alpha': [1e-4, 1e-3]  # regularización L2
 }
